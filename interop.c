@@ -191,20 +191,20 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
 
 		mwIndex lCol;	
 		for (lCol = 0; lCol < lCols; lCol++) {
-			double *lDst = (double *)(result->data) + 2*lCol;
+			unsigned char *lDst = result->data + result->strides[1]*lCol;
 			mwIndex lRow;
-			for (lRow = 0; lRow < lRows; lRow++, lDst += 2*lCols) {
-				lDst[0] = *lPR++;
-				lDst[1] = *lPI++;
+			for (lRow = 0; lRow < lRows; lRow++, lDst += result->strides[0]) {
+				((double*)lDst)[0] = *lPR++;
+				((double*)lDst)[1] = *lPI++;
 			}
 		}
 	} else {
 		mwIndex lCol;
 		for (lCol = 0; lCol < lCols; lCol++) {
-			double *lDst = (double *)(result->data) + lCol;
+			unsigned char *lDst = result->data + result->strides[1]*lCol;
 			mwIndex lRow;
-			for (lRow = 0; lRow < lRows; lRow++, lDst += lCols) {
-				*lDst = *lPR++;
+			for (lRow = 0; lRow < lRows; lRow++, lDst += result->strides[0]) {
+				*(double*)lDst = *lPR++;
 			}
 		}
 	}
@@ -279,20 +279,20 @@ interop_Engine_putVariable (interop_EngineObject *self, PyObject *args)
 
 		mwIndex lCol;	
 		for (lCol = 0; lCol < lCols; lCol++) {
-			double *lDst = (double *)(array->data) + 2*lCol;
+			unsigned char *lDst = array->data + array->strides[1]*lCol;
 			mwIndex lRow;
-			for (lRow = 0; lRow < lRows; lRow++, lDst += 2*lCols) {
-				*lPR++ = lDst[0];
-				*lPI++ = lDst[1];
+			for (lRow = 0; lRow < lRows; lRow++, lDst += array->strides[0]) {
+				*lPR++ = ((double*)lDst)[0];
+				*lPI++ = ((double*)lDst)[1];
 			}
 		}
 	} else {
 		mwIndex lCol;
 		for (lCol = 0; lCol < lCols; lCol++) {
-			double *lDst = (double *)(array->data) + lCol;
+			unsigned char *lDst = array->data + array->strides[1]*lCol;
 			mwIndex lRow;
-			for (lRow = 0; lRow < lRows; lRow++, lDst += lCols) {
-				*lPR++ = *lDst;
+			for (lRow = 0; lRow < lRows; lRow++, lDst += array->strides[0]) {
+				*lPR++ = *(double*)lDst;
 			}
 		}
 	}
