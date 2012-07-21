@@ -449,6 +449,9 @@ interop_Engine_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static PyTypeObject interop_EngineType = {
 	PyObject_HEAD_INIT(NULL)
+#if PY_MAJOR_VERSION < 3
+	0,																			/* ob_size */
+#endif
 	"interop.Engine",												/* tp_name */
 	sizeof(interop_EngineObject),						/* tp_basicsize */
 	0,																			/* tp_itemsize */
@@ -489,6 +492,7 @@ static PyTypeObject interop_EngineType = {
 	interop_Engine_new,											/* tp_new */
 };	
 
+#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef moduledef = {
 	PyModuleDef_HEAD_INIT,
 	"interop",
@@ -500,21 +504,40 @@ static struct PyModuleDef moduledef = {
 	NULL,
 	NULL
 };
+#endif
 
+#if PY_MAJOR_VERSION < 3
+static PyMethodDef interop_methods[] = {
+    {NULL}  /* Sentinel */
+};
+#endif
+
+#if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC
 PyInit_interop(void)
+#else
+PyMODINIT_FUNC
+initinterop(void)
+#endif
 {
 	import_array();
 
 	if (PyType_Ready(&interop_EngineType) < 0)
 		return NULL;
 
+#if PY_MAJOR_VERSION >= 3
 	PyObject *m = PyModule_Create(&moduledef);
+#else
+	PyObject *m = Py_InitModule3("interop", interop_methods, "Wraps the MATLAB C engine API.");
+#endif
+
 	if (!m)
 		return NULL;
 
 	Py_INCREF(&interop_EngineType);
 	PyModule_AddObject(m, "Engine", (PyObject*)&interop_EngineType);
 
+#if PY_MAJOR_VERSION >= 3
 	return m;
+#endif
 }
