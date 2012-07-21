@@ -1,0 +1,19 @@
+Python bindings for the MATLAB engine C API.
+http://www.mathworks.com/help/techdoc/matlab_external/f29148.html
+
+What works:
+engOpen - Start up MATLAB engine
+engClose - Shut down MATLAB engine
+engGetVariable - Get a MATLAB array from the engine
+engPutVariable - Send a MATLAB array to the engine
+engEvalString - Execute a MATLAB command
+
+What might work (I've never used it):
+engOutputBuffer - Create a buffer to store MATLAB text output
+
+What remains to be implemented (I don't have a need for them):
+engOpenSingleUse - Start a MATLAB engine session for single, nonshared use
+engGetVisible - Determine visibility of MATLAB engine session
+engSetVisible - Show or hide MATLAB engine session
+
+putVariable accepts 1 or 2D numpy floating point numpy arrays and getVariable returns 2D floating point numpy arrays.  Does not support cell arrays and will not raise an exception if you try.  Does not have the ability to know when evalString fails.
