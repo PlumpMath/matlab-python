@@ -30,7 +30,7 @@ extract_mutex (interop_EngineObject *self)
   return mutex;
 }
 
-static const Engine *
+static Engine *
 extract_engine (interop_EngineObject *self)
 {
   if (!self->ep_capsule)
@@ -51,7 +51,7 @@ extract_engine (interop_EngineObject *self)
     return NULL;
   }
 
-  const Engine * ep = (const Engine *)PyCapsule_GetPointer(self->ep_capsule, "engine");
+  Engine * ep = (Engine *)PyCapsule_GetPointer(self->ep_capsule, "engine");
 
   return ep;
 }
@@ -85,7 +85,7 @@ interop_Engine_open (interop_EngineObject *self, PyObject *args)
 
   if (!retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to open engine.");
+    PyErr_SetString(PyExc_Exception, "Failed to open engine. (http://www.mathworks.com/help/matlab/apiref/engopen.html)");
     return NULL;
   }
 
@@ -100,15 +100,13 @@ interop_Engine_open (interop_EngineObject *self, PyObject *args)
 
   assert (retval == extract_ep (self));
 
-  printf("Opened engine\n");
-
   return Py_BuildValue("");
 }
 
 static PyObject *
 interop_Engine_close (interop_EngineObject *self) 
 {
-  const Engine * ep = extract_engine (self);
+  Engine * ep = extract_engine (self);
   if (!ep)
     return NULL;
 
@@ -125,7 +123,7 @@ interop_Engine_close (interop_EngineObject *self)
 
   if (retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to close engine.");
+    PyErr_SetString(PyExc_Exception, "Failed to close engine.  Has it already been closed?  (http://www.mathworks.com/help/matlab/apiref/engclose.html)");
     return NULL;
   }
 
@@ -139,7 +137,7 @@ interop_Engine_close (interop_EngineObject *self)
 static PyObject *
 interop_Engine_getVariable (interop_EngineObject *self, PyObject *args) 
 {
-  const Engine * ep = extract_engine (self);
+  Engine * ep = extract_engine (self);
   if (!ep)
     return NULL;
 
@@ -160,7 +158,7 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
 
   if (!retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to get variable.");
+    PyErr_SetString(PyExc_Exception, "Failed to get variable.  Does the variable exist?  (http://www.mathworks.com/help/matlab/apiref/enggetvariable.html)");
     return NULL;
   }
 
@@ -170,7 +168,7 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
   int i;
   for (i=0; i<nd; i++)  pydims[i] = (npy_intp)(dims[i]);
   bool c = mxIsComplex(retval);
-  PyArrayObject * result = PyArray_SimpleNew(
+  PyArrayObject * result = (PyArrayObject*)PyArray_SimpleNew(
                             (npy_intp)(nd),
                             pydims,
                             c ? PyArray_CDOUBLE : PyArray_DOUBLE);
@@ -188,7 +186,7 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
 
     mwIndex lCol; 
     for (lCol = 0; lCol < lCols; lCol++) {
-      unsigned char *lDst = result->data + result->strides[1]*lCol;
+      char *lDst = result->data + result->strides[1]*lCol;
       mwIndex lRow;
       for (lRow = 0; lRow < lRows; lRow++, lDst += result->strides[0]) {
         ((double*)lDst)[0] = *lPR++;
@@ -198,7 +196,7 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
   } else {
     mwIndex lCol;
     for (lCol = 0; lCol < lCols; lCol++) {
-      unsigned char *lDst = result->data + result->strides[1]*lCol;
+      char *lDst = result->data + result->strides[1]*lCol;
       mwIndex lRow;
       for (lRow = 0; lRow < lRows; lRow++, lDst += result->strides[0]) {
         *(double*)lDst = *lPR++;
@@ -212,7 +210,7 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
 static PyObject *
 interop_Engine_putVariable (interop_EngineObject *self, PyObject *args) 
 {
-  const Engine * ep = extract_engine (self);
+  Engine * ep = extract_engine (self);
   if (!ep)
     return NULL;
 
@@ -276,7 +274,7 @@ interop_Engine_putVariable (interop_EngineObject *self, PyObject *args)
 
     mwIndex lCol; 
     for (lCol = 0; lCol < lCols; lCol++) {
-      unsigned char *lDst = array->data + array->strides[1]*lCol;
+      char *lDst = array->data + array->strides[1]*lCol;
       mwIndex lRow;
       for (lRow = 0; lRow < lRows; lRow++, lDst += array->strides[0]) {
         *lPR++ = ((double*)lDst)[0];
@@ -286,7 +284,7 @@ interop_Engine_putVariable (interop_EngineObject *self, PyObject *args)
   } else {
     mwIndex lCol;
     for (lCol = 0; lCol < lCols; lCol++) {
-      unsigned char *lDst = array->data + array->strides[1]*lCol;
+      char *lDst = array->data + array->strides[1]*lCol;
       mwIndex lRow;
       for (lRow = 0; lRow < lRows; lRow++, lDst += array->strides[0]) {
         *lPR++ = *(double*)lDst;
@@ -303,7 +301,7 @@ interop_Engine_putVariable (interop_EngineObject *self, PyObject *args)
 
   if (retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to put variable.");
+    PyErr_SetString(PyExc_Exception, "Failed to put variable.  (http://www.mathworks.com/help/matlab/apiref/engputvariable.html)");
     return NULL;
   }
 
@@ -313,7 +311,7 @@ interop_Engine_putVariable (interop_EngineObject *self, PyObject *args)
 static PyObject *
 interop_Engine_evalString (interop_EngineObject *self, PyObject *args) 
 {
-  const Engine * ep = extract_engine (self);
+  Engine * ep = extract_engine (self);
   if (!ep)
     return NULL;
 
@@ -334,7 +332,7 @@ interop_Engine_evalString (interop_EngineObject *self, PyObject *args)
 
   if (retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to eval string.");
+    PyErr_SetString(PyExc_Exception, "Failed to eval string.  Is the engine still running?  (http://www.mathworks.com/help/matlab/apiref/engevalstring.html)");
     return NULL;
   }
 
@@ -344,7 +342,7 @@ interop_Engine_evalString (interop_EngineObject *self, PyObject *args)
 static PyObject *
 interop_Engine_outputBuffer (interop_EngineObject *self, PyObject *args) 
 {
-  const Engine * ep = extract_engine (self);
+  Engine * ep = extract_engine (self);
   if (!ep)
     return NULL;
 
@@ -352,7 +350,7 @@ interop_Engine_outputBuffer (interop_EngineObject *self, PyObject *args)
   if (!mutex)
     return NULL;
 
-  const char *p = NULL;
+  char *p = NULL;
   int n = 0;
 
   if (!PyArg_ParseTuple(args, "|zi", &p, &n))
@@ -367,7 +365,7 @@ interop_Engine_outputBuffer (interop_EngineObject *self, PyObject *args)
 
   if (retval)
   {
-    PyErr_SetString(PyExc_Exception, "Failed to set output buffer.");
+    PyErr_SetString(PyExc_Exception, "Failed to set output buffer.  (http://www.mathworks.com/help/matlab/apiref/engoutputbuffer.html)");
     return NULL;
   }
 
@@ -520,7 +518,11 @@ initinterop(void)
   import_array();
 
   if (PyType_Ready(&interop_EngineType) < 0)
+  #if MAJOR_VERSION >= 3
     return NULL;
+  #else
+    return;
+  #endif
 
 #if PY_MAJOR_VERSION >= 3
   PyObject *m = PyModule_Create(&moduledef);
@@ -529,7 +531,11 @@ initinterop(void)
 #endif
 
   if (!m)
+  #if MAJOR_VERSION >= 3
     return NULL;
+  #else
+    return;
+  #endif
 
   Py_INCREF(&interop_EngineType);
   PyModule_AddObject(m, "Engine", (PyObject*)&interop_EngineType);

@@ -3,9 +3,9 @@ import numpy as np
 
 interop = Extension('interop',
                     sources = ['interop.c'],
-                    include_dirs = ['/hydra/S1/local/MATLAB/R2011a/extern/include',
+                    include_dirs = ['/usr/local/MATLAB/R2012b/extern/include',
                                     np.get_include()],
-                    library_dirs = ['/hydra/S1/local/MATLAB/R2011a/bin/glnxa64'],
+                    library_dirs = ['/usr/local/MATLAB/R2012b/bin/glnxa64'],
                     libraries = ['eng'])
 
 setup (name = 'matlab',
