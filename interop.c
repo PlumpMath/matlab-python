@@ -168,6 +168,14 @@ interop_Engine_getVariable (interop_EngineObject *self, PyObject *args)
   int i;
   for (i=0; i<nd; i++)  pydims[i] = (npy_intp)(dims[i]);
   bool c = mxIsComplex(retval);
+  mxClassID classID = mxGetClassID(retval);
+  if (mxDOUBLE_CLASS != classID)
+  {
+    PyErr_SetString(PyExc_Exception, "Can only get arrays with class double");
+    mxDestroyArray (retval);
+    return NULL;
+  }
+
   PyArrayObject * result = (PyArrayObject*)PyArray_SimpleNew(
                             (npy_intp)(nd),
                             pydims,
